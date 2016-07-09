@@ -34,7 +34,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
         username = self.users.get(chat_id)
         self.loop.create_task(self.sendMessage(chat_id, '\U0001f551 please wait...'))
         try:
-            self.st.add_entry(
+            total_month = self.st.add_entry(
                 data['sum'],
                 data['category'],
                 username,
@@ -44,7 +44,8 @@ class MoneyTrackerBot(telepot.aio.Bot):
             print(e)
             self.loop.create_task(self.sendMessage(chat_id, 'Error! Try again!\n' + str(e)))
         else:
-            self.loop.create_task(self.sendMessage(chat_id, '\u2705 Added!', reply_markup=ReplyKeyboardHide()))
+            msg = '\u2705 Added! Total spent in this month: {}'.format(total_month)
+            self.loop.create_task(self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide()))
 
     async def on_chat_message(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
@@ -57,7 +58,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             self.loop.create_task(self.sendMessage(chat_id, 'Welcome!'))
         elif msg['text'].startswith('/add'):
             self.sessions[chat_id] = {}
-            self.loop.create_task(self.sendMessage(chat_id, '\U0001f4b8 Please enter sum that you just spend', reply_markup=ReplyKeyboardHide()))
+            self.loop.create_task(self.sendMessage(chat_id, '\U0001f4b8 Please enter sum that you just spent', reply_markup=ReplyKeyboardHide()))
         elif msg['text'].startswith('/cancel'):
             if chat_id in self.sessions:
                 self.sessions.pop(chat_id)

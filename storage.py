@@ -10,6 +10,7 @@ class MoneyTrackerStorage(object):
         self.keyfile = keyfile
         self.spreadsheet_name = spreadsheet_name
         self.spreadsheet, self.wks = None, None
+        self.total_cell_coordinates = (3, 7)
 
     def reselect_sheet(self):
         current_name = datetime.now().strftime('%B %Y')
@@ -22,6 +23,7 @@ class MoneyTrackerStorage(object):
             wks.update_cell(1, 3, 'category')
             wks.update_cell(1, 4, 'person')
             wks.update_cell(1, 5, 'description')
+            wks.update_cell(*self.total_cell_coordinates, '=sum(B2:B1000)')
             self.reselect_sheet()
 
     def reauthorize(self):
@@ -44,4 +46,6 @@ class MoneyTrackerStorage(object):
         self.wks.update_cell(row, 3, category)
         self.wks.update_cell(row, 4, person)
         self.wks.update_cell(row, 5, description)
+        total_cell = self.wks.cell(*self.total_cell_coordinates)
+        return total_cell.value
 
