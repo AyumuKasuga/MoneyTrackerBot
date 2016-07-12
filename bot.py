@@ -44,7 +44,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             print(e)
             self.loop.create_task(self.sendMessage(chat_id, 'Error! Try again!\n' + str(e)))
         else:
-            msg = '\u2705 Added! Total spent in this month: {}'.format(total_month)
+            msg = '\u2705 Added! Total spent in this month: {} \U0001f640'.format(total_month)
             self.loop.create_task(self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide()))
 
     async def on_chat_message(self, msg):
