@@ -37,6 +37,12 @@ class MoneyTrackerStorage(object):
             if x == '':
                 return i + 1
 
+    def get_total(self):
+        self.reauthorize()
+        self.reselect_sheet()
+        total_cell = self.wks.cell(*self.total_cell_coordinates)
+        return total_cell.value
+
     def add_entry(self, sum, category, person, description=''):
         self.reauthorize()
         self.reselect_sheet()
@@ -46,6 +52,4 @@ class MoneyTrackerStorage(object):
         self.wks.update_cell(row, 3, category)
         self.wks.update_cell(row, 4, person)
         self.wks.update_cell(row, 5, description)
-        total_cell = self.wks.cell(*self.total_cell_coordinates)
-        return total_cell.value
-
+        return self.get_total()

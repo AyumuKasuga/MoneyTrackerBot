@@ -3,3 +3,4 @@ __pycache__
 *.pyc
 conf/config.json
 conf/MoneyTracker.json
+venv

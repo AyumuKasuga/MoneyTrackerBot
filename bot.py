@@ -30,6 +30,10 @@ class MoneyTrackerBot(telepot.aio.Bot):
                     return msg['text'][offset:length], msg['text'][offset+length:].strip()
         return None, None
 
+    async def send_total(self, chat_id):
+        msg = 'Total spent in this month: {}'.format(self.st.get_total())
+        await self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide())
+
     def save_entry(self, chat_id, data):
         username = self.users.get(chat_id)
         self.loop.create_task(self.sendMessage(chat_id, '\U0001f551 please wait...'))
@@ -44,7 +48,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             print(e)
             self.loop.create_task(self.sendMessage(chat_id, 'Error! Try again!\n' + str(e)))
         else:
-            msg = '\u2705 Added! Total spent in this month: {} \U0001f640'.format(total_month)
+            msg = '\u2705 Added! Total spent in this month: {}'.format(total_month)
             self.loop.create_task(self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide()))
 
     async def on_chat_message(self, msg):
@@ -56,6 +60,8 @@ class MoneyTrackerBot(telepot.aio.Bot):
             return
         if msg['text'].startswith('/start'):
             self.loop.create_task(self.sendMessage(chat_id, 'Welcome!'))
+        elif msg['text'].startswith('/total'):
+            self.loop.create_task(self.send_total(chat_id))
         elif msg['text'].startswith('/add'):
             self.sessions[chat_id] = {}
             self.loop.create_task(self.sendMessage(chat_id, '\U0001f4b8 Please enter sum that you just spent', reply_markup=ReplyKeyboardHide()))
