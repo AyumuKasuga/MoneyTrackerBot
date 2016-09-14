@@ -3,6 +3,7 @@ import json
 import signal
 import asyncio
 import functools
+from datetime import datetime
 
 import telepot
 import telepot.aio
@@ -40,12 +41,24 @@ class MoneyTrackerBot(telepot.aio.Bot):
         return None, None
 
     async def send_total(self, chat_id):
-        msg = 'Total spent in this month: {}'.format(self.st.get_total())
-        await self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide())
+        msg = 'Total spent in this month: *{}*'.format(self.st.get_total())
+        await self.sendMessage(
+            chat_id,
+            msg,
+            parse_mode='Markdown',
+            reply_markup=ReplyKeyboardHide()
+        )
 
-    def save_entry(self, chat_id, data):
+    def export_worksheet(self, chat_id):
+        self.loop.create_task(self.sendChatAction(chat_id, 'upload_document'))
+        document_name = '{0}.pdf'.format(datetime.now().strftime('%B %Y'))
+        worksheet_content = self.st.export_worksheet()
+        self.loop.create_task(
+            self.sendDocument(chat_id, document=(document_name, worksheet_content))
+        )
+
+    def save_entry(self, chat_id, data, msg_id):
         username = self.users.get(chat_id)
-        self.loop.create_task(self.sendMessage(chat_id, '\U0001f551 please wait...'))
         try:
             total_month = self.st.add_entry(
                 data['sum'],
@@ -55,10 +68,27 @@ class MoneyTrackerBot(telepot.aio.Bot):
             )
         except Exception as e:
             print(e)
-            self.loop.create_task(self.sendMessage(chat_id, 'Error! Try again!\n' + str(e)))
+            self.loop.create_task(self.editMessageText(
+                (chat_id, msg_id),
+                'Error! Try again!\n' + str(e))
+            )
         else:
-            msg = '\u2705 Added! Total spent in this month: {}'.format(total_month)
-            self.loop.create_task(self.sendMessage(chat_id, msg, reply_markup=ReplyKeyboardHide()))
+            msg = '\u2705 Added! Total spent in this month: *{}*'.format(total_month)
+            self.loop.create_task(
+                self.editMessageText((chat_id, msg_id), msg, parse_mode='Markdown')
+            )
+            if self.config.get('broadcast'):
+                broadcast_users = set(self.users.keys()) - set([chat_id])
+                broadcast_msg = '{username} just added *{sum}* {category} {description}'.format(
+                    username=self.users.get(chat_id),
+                    sum=data['sum'],
+                    category=data['category'],
+                    description=data['description']
+                )
+                for uid in broadcast_users:
+                    self.loop.create_task(
+                        self.sendMessage(uid, broadcast_msg, parse_mode='Markdown')
+                    )
 
     async def on_chat_message(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
@@ -71,6 +101,11 @@ class MoneyTrackerBot(telepot.aio.Bot):
             self.loop.create_task(self.sendMessage(chat_id, 'Welcome!'))
         elif msg['text'].startswith('/total'):
             self.loop.create_task(self.send_total(chat_id))
+        elif msg['text'].startswith('/download'):
+            self.loop.run_in_executor(
+                None,
+                functools.partial(self.export_worksheet, chat_id)
+            )
         elif msg['text'].startswith('/add'):
             self.sessions[chat_id] = {}
             self.loop.create_task(
@@ -126,10 +161,16 @@ class MoneyTrackerBot(telepot.aio.Bot):
             elif not self.sessions[chat_id].get('description'):
                 self.sessions[chat_id].update({'description': msg['text']})
                 data = self.sessions.pop(chat_id)
+                await self.sendMessage(chat_id, 'saving', reply_markup=ReplyKeyboardHide())
+                wait_msg = await self.sendMessage(
+                    chat_id,
+                    '\U0001f551 please wait...',
+                    parse_mode='Markdown',
+                )
                 with (await self.lock):
                     self.loop.run_in_executor(
                         None,
-                        functools.partial(self.save_entry, chat_id, data)
+                        functools.partial(self.save_entry, chat_id, data, wait_msg['message_id'])
                     )
 
 
@@ -150,7 +191,7 @@ st = MoneyTrackerStorage(
     spreadsheet_name=config["spreadsheet_name"]
 )
 bot = MoneyTrackerBot(token=token, config=config, st=st, loop=loop)
-loop.create_task(bot.message_loop())
+loop.create_task(bot.message_loop(timeout=60*10))
 print("pid %s listening..." % os.getpid())
 
 try:

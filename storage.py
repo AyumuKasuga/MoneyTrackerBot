@@ -53,3 +53,8 @@ class MoneyTrackerStorage(object):
         self.wks.update_cell(row, 4, person)
         self.wks.update_cell(row, 5, description)
         return self.get_total()
+
+    def export_worksheet(self):
+        self.reauthorize()
+        self.reselect_sheet()
+        return self.wks.export('pdf')
