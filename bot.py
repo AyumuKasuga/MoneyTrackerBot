@@ -7,7 +7,7 @@ from datetime import datetime
 
 import telepot
 import telepot.aio
-from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardHide
+from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 from storage import MoneyTrackerStorage
 
@@ -46,7 +46,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             chat_id,
             msg,
             parse_mode='Markdown',
-            reply_markup=ReplyKeyboardHide()
+            reply_markup=ReplyKeyboardRemove()
         )
 
     def export_worksheet(self, chat_id):
@@ -112,7 +112,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
                 self.sendMessage(
                     chat_id,
                     '\U0001f4b8 Please enter sum that you just spent',
-                    reply_markup=ReplyKeyboardHide()
+                    reply_markup=ReplyKeyboardRemove()
                 )
             )
         elif msg['text'].startswith('/cancel'):
@@ -122,7 +122,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
                 self.sendMessage(
                     chat_id,
                     'Okay, forgot everything \U0001f642',
-                    reply_markup=ReplyKeyboardHide()
+                    reply_markup=ReplyKeyboardRemove()
                 )
             )
         else:
@@ -161,7 +161,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             elif not self.sessions[chat_id].get('description'):
                 self.sessions[chat_id].update({'description': msg['text']})
                 data = self.sessions.pop(chat_id)
-                await self.sendMessage(chat_id, 'saving', reply_markup=ReplyKeyboardHide())
+                await self.sendMessage(chat_id, 'saving', reply_markup=ReplyKeyboardRemove())
                 wait_msg = await self.sendMessage(
                     chat_id,
                     '\U0001f551 please wait...',
