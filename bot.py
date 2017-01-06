@@ -78,7 +78,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
                 self.editMessageText((chat_id, msg_id), msg, parse_mode='Markdown')
             )
             if self.config.get('broadcast'):
-                broadcast_users = set(self.users.keys()) - set([chat_id])
+                broadcast_users = set(self.users.keys()) - {chat_id}
                 broadcast_msg = '{username} just added *{sum}* {category} {description}'.format(
                     username=self.users.get(chat_id),
                     sum=data['sum'],
