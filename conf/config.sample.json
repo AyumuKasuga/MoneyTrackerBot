@@ -1,0 +1,18 @@
+{
+    "telegram_token": "YOUR_TELEGRAM_TOKEN",
+    "spreadsheet_name": "spreadsheet name from google drive",
+    "users": {
+      "telegram_chat_id": "friendly name",
+      "telegram_chat_id_2": "friendly name 2",
+    },
+    "broadcast": true,
+
+    "categories": [
+        ["food", "mobile phone"],
+        ["games", "clothes"]
+    ],
+
+    "descriptions": [
+        ["Lunch", "Vegetables", "Supermarket"]
+    ]
+}
