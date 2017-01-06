@@ -20,10 +20,13 @@ In this case you will use my docker image, but of course you can build your own.
 Some images
 ===========
 Interaction with bot
+
 ![And it looks like this](http://i.imgur.com/dsZ1mye.gif)
 
 Part of final spread sheet
+
 ![spread sheet](http://i.imgur.com/BYSjHxp.png)
 
 Also sheets separated by month
+
 ![separated by month](http://i.imgur.com/VZeLC4s.png)
