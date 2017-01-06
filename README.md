@@ -1,7 +1,7 @@
 MoneyTracker
 ============
 
-I made this bot for my family to track our money spends, actually it's just interface for Google spread sheets.
+I made this bot for my family to track our money spending, actually it's just interface for Google spread sheets.
 Nothing interesting here.
 
 
