@@ -95,7 +95,12 @@ class MoneyTrackerBot(telepot.aio.Bot):
         print(msg['text'])
         if chat_id not in self.users:
             print("unknown chat_id: ", chat_id)
-            self.loop.create_task(self.sendMessage(chat_id, 'Sorry, i do not know who you are'))
+            self.loop.create_task(self.sendMessage(
+                chat_id,
+                'Sorry, i do not know who you are! '
+                'If you want to learn more about MoneyTrackerBot please visit '
+                'https://github.com/AyumuKasuga/MoneyTrackerBot'
+            ))
             return
         if msg['text'].startswith('/start'):
             self.loop.create_task(self.sendMessage(chat_id, 'Welcome!'))
@@ -161,7 +166,11 @@ class MoneyTrackerBot(telepot.aio.Bot):
             elif not self.sessions[chat_id].get('description'):
                 self.sessions[chat_id].update({'description': msg['text']})
                 data = self.sessions.pop(chat_id)
-                await self.sendMessage(chat_id, 'saving', reply_markup=ReplyKeyboardRemove())
+                await self.sendMessage(
+                    chat_id,
+                    'Now we trying to save your entry...',
+                    reply_markup=ReplyKeyboardRemove()
+                )
                 wait_msg = await self.sendMessage(
                     chat_id,
                     '\U0001f551 please wait...',
