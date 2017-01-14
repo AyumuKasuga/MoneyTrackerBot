@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:16.10
 
 MAINTAINER AyumuKasuga
 
@@ -18,11 +18,12 @@ RUN mkdir /MoneyTracker
 
 WORKDIR /MoneyTracker
 
-COPY *.py /MoneyTracker/
 COPY requirements.txt /MoneyTracker/
 
 RUN /usr/bin/python3 -m venv /MoneyTracker/.venv
 RUN chmod +x /MoneyTracker/.venv/bin/activate
 RUN cd /MoneyTracker && /MoneyTracker/.venv/bin/pip install pip --upgrade && /MoneyTracker/.venv/bin/pip install -r requirements.txt
+
+COPY *.py /MoneyTracker/
 
 CMD /MoneyTracker/.venv/bin/python -u bot.py
