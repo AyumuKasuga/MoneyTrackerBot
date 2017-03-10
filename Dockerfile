@@ -2,7 +2,9 @@ FROM alpine:latest
 
 MAINTAINER AyumuKasuga
 
-RUN apk add --no-cache python3 && \
+RUN apk --update upgrade && \
+    apk add --no-cache python3 ca-certificates && \
+    update-ca-certificates && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
