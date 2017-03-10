@@ -7,7 +7,7 @@ RUN apk --update upgrade && \
     update-ca-certificates && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
-    pip3 install --upgrade pip setuptools && \
+    pip3 install --no-cache-dir --upgrade pip setuptools && \
     rm -r /root/.cache
 
 RUN mkdir /MoneyTracker
@@ -16,7 +16,7 @@ WORKDIR /MoneyTracker
 
 COPY requirements.txt /MoneyTracker/
 
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY *.py /MoneyTracker/
 
