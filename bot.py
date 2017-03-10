@@ -200,7 +200,7 @@ st = MoneyTrackerStorage(
     spreadsheet_name=config["spreadsheet_name"]
 )
 bot = MoneyTrackerBot(token=token, config=config, st=st, loop=loop)
-loop.create_task(bot.message_loop(timeout=60*10))
+loop.create_task(bot.message_loop())
 print("pid %s listening..." % os.getpid())
 
 try:
