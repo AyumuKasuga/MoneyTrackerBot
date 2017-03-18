@@ -51,7 +51,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
 
     def export_worksheet(self, chat_id):
         self.loop.create_task(self.sendChatAction(chat_id, 'upload_document'))
-        document_name = '{0}.pdf'.format(datetime.now().strftime('%B %Y'))
+        document_name = '{0}.pdf'.format(datetime.now().strftime('%B_%Y'))
         worksheet_content = self.st.export_worksheet()
         self.loop.create_task(
             self.sendDocument(chat_id, document=(document_name, worksheet_content))
