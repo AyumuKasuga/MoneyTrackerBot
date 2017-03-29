@@ -42,7 +42,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
         return None, None
 
     def get_total_msg(self, total, limit):
-        msg = '📊 Total spent in this month: *{}*'.format(total)
+        msg = 'Total spent in this month: *{}*'.format(total)
         if limit:
             now = datetime.now()
             days_left = monthrange(now.year, now.month)[1] - now.day + 1
@@ -50,7 +50,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             delta = 0 if delta < 0 else delta
             delta_today = int(delta/days_left)
             msg += '''\nAccording your montly limit {}
-you have *{}* left for this month (*{}* for today).'''.format(limit, delta, delta_today)
+you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta, delta_today)
             if delta == 0:
                 msg += ' 🙀'
             else:
