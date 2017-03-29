@@ -4,6 +4,7 @@ import signal
 import asyncio
 import functools
 from datetime import datetime
+from calendar import monthrange
 
 import telepot
 import telepot.aio
@@ -40,8 +41,24 @@ class MoneyTrackerBot(telepot.aio.Bot):
                     return msg['text'][offset:length], msg['text'][offset+length:].strip()
         return None, None
 
+    def get_total_msg(self, total, limit):
+        msg = '📊 Total spent in this month: *{}*'.format(total)
+        if limit:
+            now = datetime.now()
+            days_left = monthrange(now.year, now.month)[1] - now.day + 1
+            delta = int(limit) - int(total)
+            delta = 0 if delta < 0 else delta
+            delta_today = int(delta/days_left)
+            msg += '''\nAccording your montly limit {}
+you have *{}* left for this month (*{}* for today).'''.format(limit, delta, delta_today)
+            if delta == 0:
+                msg += ' 🙀'
+            else:
+                msg += ' 😸'
+        return msg
+
     async def send_total(self, chat_id):
-        msg = 'Total spent in this month: *{}*'.format(self.st.get_total())
+        msg = self.get_total_msg(*self.st.get_total_and_limit())
         await self.sendMessage(
             chat_id,
             msg,
@@ -60,7 +77,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
     def save_entry(self, chat_id, data, msg_id):
         username = self.users.get(chat_id)
         try:
-            total_month = self.st.add_entry(
+            total_month, limit_month = self.st.add_entry(
                 data['sum'],
                 data['category'],
                 username,
@@ -73,7 +90,8 @@ class MoneyTrackerBot(telepot.aio.Bot):
                 'Error! Try again!\n' + str(e))
             )
         else:
-            msg = '\u2705 Added! Total spent in this month: *{}*'.format(total_month)
+            msg = '\u2705 Added!'
+            msg += self.get_total_msg(total_month, limit_month)
             self.loop.create_task(
                 self.editMessageText((chat_id, msg_id), msg, parse_mode='Markdown')
             )
@@ -97,11 +115,12 @@ class MoneyTrackerBot(telepot.aio.Bot):
             print("unknown chat_id: ", chat_id)
             self.loop.create_task(self.sendMessage(
                 chat_id,
-                'Sorry, i do not know who you are! '
+                'Sorry, I do not know who you are! '
                 'If you want to learn more about MoneyTrackerBot please visit '
                 'https://github.com/AyumuKasuga/MoneyTrackerBot'
             ))
             return
+
         if msg['text'].startswith('/start'):
             self.loop.create_task(self.sendMessage(chat_id, 'Welcome!'))
         elif msg['text'].startswith('/total'):
@@ -120,6 +139,31 @@ class MoneyTrackerBot(telepot.aio.Bot):
                     reply_markup=ReplyKeyboardRemove()
                 )
             )
+        elif msg['text'].startswith('/setlimit'):
+            try:
+                limit = int(msg['text'].split(' ')[1])
+            except Exception as e:
+                self.loop.create_task(
+                    self.sendMessage(
+                        chat_id,
+                        str(e),
+                        reply_markup=ReplyKeyboardRemove()
+                    )
+                )
+            else:
+                with (await self.lock):
+                    self.loop.run_in_executor(
+                        None,
+                        functools.partial(self.st.set_limit, limit)
+                    )
+                self.loop.create_task(
+                    self.sendMessage(
+                        chat_id,
+                        'Okay, Your montly limit will set to {}.'.format(limit),
+                        reply_markup=ReplyKeyboardRemove()
+                    )
+                )
+
         elif msg['text'].startswith('/cancel'):
             if chat_id in self.sessions:
                 self.sessions.pop(chat_id)
@@ -168,7 +212,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
                 data = self.sessions.pop(chat_id)
                 await self.sendMessage(
                     chat_id,
-                    'Now we trying to save your entry...',
+                    'Thank you! Now we are trying to save your entry.',
                     reply_markup=ReplyKeyboardRemove()
                 )
                 wait_msg = await self.sendMessage(

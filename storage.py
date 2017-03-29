@@ -11,6 +11,7 @@ class MoneyTrackerStorage(object):
         self.spreadsheet_name = spreadsheet_name
         self.spreadsheet, self.wks = None, None
         self.total_cell_coordinates = (3, 7)
+        self.monthly_limit_cell_coordinates = (4, 7)
 
     def reselect_sheet(self):
         current_name = datetime.now().strftime('%B %Y')
@@ -37,22 +38,30 @@ class MoneyTrackerStorage(object):
             if x == '':
                 return i + 1
 
-    def get_total(self):
+    def get_total_and_limit(self):
         self.reauthorize()
         self.reselect_sheet()
-        total_cell = self.wks.cell(*self.total_cell_coordinates)
-        return total_cell.value
+        cell_list = self.wks.range(
+            *self.total_cell_coordinates,
+            *self.monthly_limit_cell_coordinates
+        )
+        return [x.value for x in cell_list]
+
+    def set_limit(self, limit):
+        self.reauthorize()
+        self.reselect_sheet()
+        self.wks.update_cell(*self.monthly_limit_cell_coordinates, str(limit))
 
     def add_entry(self, sum, category, person, description=''):
         self.reauthorize()
         self.reselect_sheet()
         row = self.get_next_empty_row()
-        self.wks.update_cell(row, 1, str(datetime.now()))
-        self.wks.update_cell(row, 2, sum)
-        self.wks.update_cell(row, 3, category)
-        self.wks.update_cell(row, 4, person)
-        self.wks.update_cell(row, 5, description)
-        return self.get_total()
+        cell_list = self.wks.range(row, 1, row, 5)
+        data_list = (str(datetime.now()), sum, category, person, description)
+        for cell, data in zip(cell_list, data_list):
+            cell.value = data
+        self.wks.update_cells(cell_list)
+        return self.get_total_and_limit()
 
     def export_worksheet(self):
         self.reauthorize()
