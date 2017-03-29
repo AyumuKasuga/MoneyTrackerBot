@@ -49,7 +49,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             delta = int(limit) - int(total)
             delta = 0 if delta < 0 else delta
             delta_today = int(delta/days_left)
-            msg += '''\nAccording your montly limit {}
+            msg += '''\nAccording your monthly limit {}
 you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta, delta_today)
             if delta == 0:
                 msg += ' 🙀'
@@ -159,7 +159,7 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
                 self.loop.create_task(
                     self.sendMessage(
                         chat_id,
-                        'Okay, Your montly limit will set to {}.'.format(limit),
+                        'Okay, Your monthly limit will set to {}.'.format(limit),
                         reply_markup=ReplyKeyboardRemove()
                     )
                 )
