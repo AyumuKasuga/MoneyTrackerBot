@@ -41,14 +41,14 @@ class MoneyTrackerBot(telepot.aio.Bot):
                     return msg['text'][offset:length], msg['text'][offset+length:].strip()
         return None, None
 
-    def get_total_msg(self, total, limit):
+    def get_total_msg(self, today_total, total, limit):
         msg = 'Total spent in this month: *{}*'.format(total)
         if limit:
             now = datetime.now()
             days_left = monthrange(now.year, now.month)[1] - now.day + 1
             delta = int(limit) - int(total)
             delta = 0 if delta < 0 else delta
-            delta_today = int(delta/days_left)
+            delta_today = int(delta/days_left) - today_total
             msg += '''\nAccording your monthly limit {}
 you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta, delta_today)
             if delta == 0:
@@ -77,7 +77,7 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
     def save_entry(self, chat_id, data, msg_id):
         username = self.users.get(chat_id)
         try:
-            total_month, limit_month = self.st.add_entry(
+            today_total, total_month, limit_month = self.st.add_entry(
                 data['sum'],
                 data['category'],
                 username,
@@ -91,7 +91,7 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
             )
         else:
             msg = '\u2705 Added!'
-            msg += self.get_total_msg(total_month, limit_month)
+            msg += self.get_total_msg(today_total, total_month, limit_month)
             self.loop.create_task(
                 self.editMessageText((chat_id, msg_id), msg, parse_mode='Markdown')
             )

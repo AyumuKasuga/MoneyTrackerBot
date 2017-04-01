@@ -38,14 +38,29 @@ class MoneyTrackerStorage(object):
             if x == '':
                 return i + 1
 
+    def get_today_total(self):
+        today = datetime.now().date().strftime('%Y-%m-%d')
+        total_today = 0
+        prev_row = self.get_next_empty_row() - 1
+        for row in range(prev_row, 0, -1):
+            date, sum = [c.value for c in self.wks.range(row, 1, row, 2)]
+            date = date.split(' ')[0]
+            if today == date:
+                total_today += int(sum)
+            else:
+                return total_today
+
     def get_total_and_limit(self):
+        """
+        :return: tuple (total today, total month, monthly limit) 
+        """
         self.reauthorize()
         self.reselect_sheet()
         cell_list = self.wks.range(
             *self.total_cell_coordinates,
             *self.monthly_limit_cell_coordinates
         )
-        return [x.value for x in cell_list]
+        return [self.get_today_total()] + [x.value for x in cell_list]
 
     def set_limit(self, limit):
         self.reauthorize()
