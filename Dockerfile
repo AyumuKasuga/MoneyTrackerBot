@@ -8,6 +8,10 @@ RUN apk --update upgrade && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --no-cache-dir --upgrade pip setuptools && \
+    apk add tzdata && \
+    cp /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
+    echo "Europe/Moscow" > /etc/timezone && \
+    apk del tzdata && \
     rm -r /root/.cache
 
 RUN mkdir /MoneyTracker
