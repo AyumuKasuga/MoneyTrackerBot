@@ -38,7 +38,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             for entity in msg['entities']:
                 if entity['type'] == 'bot_command':
                     offset, length = entity['offset'], entity['length']
-                    return msg['text'][offset:length], msg['text'][offset+length:].strip()
+                    return msg['text'][offset:length], msg['text'][offset + length:].strip()
         return None, None
 
     def get_total_msg(self, today_total, total, limit):
@@ -48,7 +48,7 @@ class MoneyTrackerBot(telepot.aio.Bot):
             days_left = monthrange(now.year, now.month)[1] - now.day + 1
             delta = int(limit) - int(total)
             delta = 0 if delta < 0 else delta
-            delta_today = int(delta/days_left) - today_total
+            delta_today = int(delta / days_left) - today_total
             msg += '''\nAccording your monthly limit {}
 you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta, delta_today)
             if delta == 0:
@@ -71,7 +71,8 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
         document_name = '{0}.pdf'.format(datetime.now().strftime('%B_%Y'))
         worksheet_content = self.st.export_worksheet()
         self.loop.create_task(
-            self.sendDocument(chat_id, document=(document_name, worksheet_content))
+            self.sendDocument(chat_id, document=(
+                document_name, worksheet_content))
         )
 
     def save_entry(self, chat_id, data, msg_id):
@@ -93,7 +94,8 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
             msg = '\u2705 Added!'
             msg += self.get_total_msg(today_total, total_month, limit_month)
             self.loop.create_task(
-                self.editMessageText((chat_id, msg_id), msg, parse_mode='Markdown')
+                self.editMessageText(
+                    (chat_id, msg_id), msg, parse_mode='Markdown')
             )
             if self.config.get('broadcast'):
                 broadcast_users = set(self.users.keys()) - {chat_id}
@@ -105,7 +107,8 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
                 )
                 for uid in broadcast_users:
                     self.loop.create_task(
-                        self.sendMessage(uid, broadcast_msg, parse_mode='Markdown')
+                        self.sendMessage(uid, broadcast_msg,
+                                         parse_mode='Markdown')
                     )
 
     async def on_chat_message(self, msg):
@@ -159,7 +162,8 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
                 self.loop.create_task(
                     self.sendMessage(
                         chat_id,
-                        'Okay, Your monthly limit will set to {}.'.format(limit),
+                        'Okay, Your monthly limit will set to {}.'.format(
+                            limit),
                         reply_markup=ReplyKeyboardRemove()
                     )
                 )
@@ -223,7 +227,8 @@ you have *{}* left for this month (*{}* for today). 📊'''.format(limit, delta,
                 with (await self.lock):
                     self.loop.run_in_executor(
                         None,
-                        functools.partial(self.save_entry, chat_id, data, wait_msg['message_id'])
+                        functools.partial(
+                            self.save_entry, chat_id, data, wait_msg['message_id'])
                     )
 
 
@@ -237,7 +242,8 @@ with open('conf/config.json') as f:
 
 loop = asyncio.get_event_loop()
 for signame in ('SIGTERM', 'SIGINT'):
-    loop.add_signal_handler(getattr(signal, signame), functools.partial(bye, signame))
+    loop.add_signal_handler(getattr(signal, signame),
+                            functools.partial(bye, signame))
 token = config.pop("telegram_token")
 st = MoneyTrackerStorage(
     keyfile='conf/MoneyTracker.json',

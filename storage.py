@@ -18,7 +18,8 @@ class MoneyTrackerStorage(object):
         try:
             self.wks = self.spreadsheet.worksheet(current_name)
         except gspread.WorksheetNotFound:
-            wks = self.spreadsheet.add_worksheet(current_name, cols=20, rows=1000)
+            wks = self.spreadsheet.add_worksheet(
+                current_name, cols=20, rows=1000)
             wks.update_cell(1, 1, 'datetime')
             wks.update_cell(1, 2, 'sum')
             wks.update_cell(1, 3, 'category')
@@ -29,7 +30,8 @@ class MoneyTrackerStorage(object):
 
     def reauthorize(self):
         scope = ['https://spreadsheets.google.com/feeds']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(self.keyfile, scope)
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            self.keyfile, scope)
         gc = gspread.authorize(credentials)
         self.spreadsheet = gc.open(self.spreadsheet_name)
 
